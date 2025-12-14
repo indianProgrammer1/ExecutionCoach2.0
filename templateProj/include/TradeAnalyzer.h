@@ -1,8 +1,8 @@
 #pragma once
-#include "../include/Trade.h"
-#include "../include/Config.h"
-#include "../include/TradeResult.h"
-#include "../include/Decision.h"
+#include "Trade.h"
+#include "Config.h"
+#include "TradeResult.h"
+#include "Decision.h"
 
 
 class TradeAnalyzer
@@ -15,6 +15,7 @@ public:
 
 	TradeResult analyze(const  Trade& trade);
 };
+
 
 
 
