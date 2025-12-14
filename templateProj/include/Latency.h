@@ -15,9 +15,9 @@ public:
         return instance;
     }
 
-    void record(double microseconds) {
+    void record(double milliseconds) {
         std::lock_guard<std::mutex> lock(mu);
-        samples.push_back(microseconds);
+        samples.push_back(milliseconds);
     }
 
     void printSummary() {
@@ -48,3 +48,4 @@ public:
 
 
 };
+
