@@ -1,7 +1,7 @@
-﻿#pragma once
+#pragma once
 #include <iostream>
 #include <pqxx/pqxx>
-#include "../include/TradeAnalyzer.h"
+#include "TradeAnalyzer.h"
 class PostrgeSQL
 {
 private:
@@ -14,4 +14,5 @@ public:
     void connectToDB(const std::string& postgreConn);
     void saveToDB(const std::vector<TradeResult>& batch);
 };
+
 
