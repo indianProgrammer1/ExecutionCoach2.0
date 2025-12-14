@@ -1,8 +1,10 @@
 #pragma once
-#include "../include/Decision.h"
+#include "Decision.h"
 
 struct TradeResult {
     int id;
     decision decision;
-    int score;
+    double score;
 };
+
+
