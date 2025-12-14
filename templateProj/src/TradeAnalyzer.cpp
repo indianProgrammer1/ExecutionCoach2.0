@@ -1,11 +1,11 @@
-﻿#include "../include/TradeAnalyzer.h"
-#include "../include/TradeResult.h"
-#include "../include/Stats.h"
-#include "../include/Trade.h"
+#include "TradeAnalyzer.h"
+#include "TradeResult.h"
+#include "Stats.h"
+#include "Trade.h"
 #include <algorithm>
 #include <cmath>
 #include <string>
-int scoreTrade(const Trade& t);
+double scoreTrade(const Trade& t);
 
 TradeResult TradeAnalyzer::analyze(const  Trade& trade) {
 	TradeResult result;
@@ -16,7 +16,7 @@ TradeResult TradeAnalyzer::analyze(const  Trade& trade) {
 	if (trade.getRiskRewardPlan() < cfg_.min_rr)
 		decision = std::max(decision, BLOCK);
 
-	if (trade.getRisk() > cfg_.risk_target_pct)
+	if ((trade.getRisk()* trade.getQty()/ trade.getEquity()) > cfg_.risk_target_pct)
 		decision = std::max(decision, BLOCK);
 
 	if (trade.getRisk() == cfg_.risk_target_pct)
@@ -49,7 +49,7 @@ TradeResult TradeAnalyzer::analyze(const  Trade& trade) {
 	
 
 }
-int scoreTrade(const Trade& t)
+double scoreTrade(const Trade& t)
 { //from cents to dollars
 	const double entry = static_cast<double>(t.getEntry()) / 100.0;
 	const double exit = static_cast<double>(t.getExit()) / 100.0;
@@ -77,7 +77,7 @@ int scoreTrade(const Trade& t)
 	 double scoreRisk = 100.0 * std::clamp((0.05 - riskPercentage) / 0.05, 0.0, 1.0);
 
 	// the lower the total cost slippage + fee impact,  the higher the score
-	double slipPerTrade = (slipBps/10000.0 * entry *qty + fee) / riskMoney;
+	double slipPerTrade = (slipBps/10000.0 * entry *qty + fee) / std::max(1e-6, riskMoney);
 	double scoreSlip = 100.0 * std::clamp((0.01 - slipPerTrade) / 0.01, 0.0, 1.0);
 
 	// the closer the trade execution price is to VWAP, the higher the score
@@ -92,3 +92,5 @@ int scoreTrade(const Trade& t)
 		   scoreVwap * 0.25;
 
 }
+
+
