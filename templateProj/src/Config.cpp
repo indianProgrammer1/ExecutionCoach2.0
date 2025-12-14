@@ -1,4 +1,4 @@
-#include "../include/Config.h"
+#include "Config.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -16,7 +16,8 @@ static inline std::string trim(std::string s) {
 }
 //converts all characters in a string to lowercase letters
 static inline std::string lower(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c)
+        { return static_cast<char>(std::tolower(c)); });
     return s;
 }
 //takes configure file path and extracts its values
@@ -24,12 +25,12 @@ static inline std::string lower(std::string s) {
 Config loadConfig(const std::string& path) {
     std::ifstream in(path);
     if (!in) throw std::runtime_error("Cannot open config file: " + path);
-    Config cfg; 
+    Config cfg;
 
     //"std::string::npos" its special value that said faliure
-     std::string line;
-     while (std::getline(in, line)) {
-            //save only the string until the sign # or ;
+    std::string line;
+    while (std::getline(in, line)) {
+        //save only the string until the sign # or ;
         if (auto index = line.find('#');  index != std::string::npos) line = line.substr(0, index);
         if (auto index = line.find(';');  index != std::string::npos) line = line.substr(0, index);
 
@@ -48,17 +49,19 @@ Config loadConfig(const std::string& path) {
             else if (key == "min_rr")           cfg.min_rr = std::stod(value);
             else if (key == "max_slippage_bps") cfg.max_slippage_bps = std::stoi(value);
             else if (key == "max_vwap_dist")    cfg.max_vwap_dist = std::stod(value);
-            else if (key == "threshold" )       cfg.threshold = std::stod(value);
+            else if (key == "threshold")       cfg.threshold = std::stod(value);
         }
         catch (...) {
             throw std::runtime_error("Bad value for key '" + key + "': " + value);
         }
     }
 
- 
+
     if (std::isnan(cfg.risk_target_pct) || std::isnan(cfg.min_rr) ||
-        std::isnan(cfg.max_vwap_dist) || std::isnan(cfg.max_slippage_bps) ||
-        std::isnan(cfg.threshold)) {
+        std::isnan(cfg.max_vwap_dist) || std::isnan(cfg.threshold) ||
+        cfg.max_slippage_bps == std::numeric_limits<int>::min()
+        )
+         {
         throw std::runtime_error("Config file contains empty or invalid numeric fields");
     }
 
