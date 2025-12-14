@@ -1,11 +1,11 @@
-#include "../include/Logger.h"
+#include "Logger.h"
 Logger::Logger() {
 	//append to app.log file 
 	//log messages
 
 	file.open("Logger.log", std::ios::app);
 	if (!file.is_open()) {
-		std::cerr << "Failed to open app.log" << std::endl;
+		std::cerr << "Failed to open Logger.log" << std::endl;
 	}
 }
 Logger::~Logger() {
