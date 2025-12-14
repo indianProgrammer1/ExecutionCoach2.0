@@ -1,18 +1,18 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
-#include "../include/CSVReader.h"
-#include "../include/PostrgeSQL.h"
-#include "../include/TradeAnalyzer.h"
+#include "CSVReader.h"
+#include "PostrgeSQL.h"
+#include "TradeAnalyzer.h"
 #include <thread>
-#include "../include/Stats.h"
-#include "../include/Latency.h"
-#include "../include/TradeResult.h"
+#include "Stats.h"
+#include "Latency.h"
+#include "TradeResult.h"
 #include <vector>
 #include <mutex>
-#include "../include/Config.h"
+#include "Config.h"
 
-static int next_id = 1;   
+static std::atomic<int> next_id = 1;
 std::vector<TradeResult> producerQueue;
 std::mutex queueMutex;
 std::atomic<bool> csvTradeFinish{ false };
@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
       importTradesFromCSVToDB(argv[1], argv[2], argv[3]);
   }
   catch (const std::exception& e) {
+      ;
       std::cerr << "Fatal: " << e.what() << "\n";
       return 2;
   }
@@ -48,11 +49,14 @@ void importTradesFromCSVToDB(const std::string& csvPath, const std::string& conf
     std::thread writerThread([&]() {
         using namespace std::chrono_literals;
 
-        while (!csvTradeFinish || !producerQueue.empty()) {
-            //take the results from the producerQueue to the WriterQueue 
+        while (true) {
+            //empty queue every iteration 
             std::vector<TradeResult> writerQueue;
+
+            //take the results from the producerQueue to the WriterQueue 
             {
                 std::lock_guard<std::mutex> lock(queueMutex);
+                if (csvTradeFinish && producerQueue.empty()) break;
                 if (!producerQueue.empty())
                     writerQueue.swap(producerQueue);
             }
@@ -69,11 +73,12 @@ void importTradesFromCSVToDB(const std::string& csvPath, const std::string& conf
             //write in 10ms batch 
             if (writerQueue.empty())
                 std::this_thread::sleep_for(10ms);
+
         }
         });
   
 
-    int tradeId = 1;
+
     //hot path 
     while (true)
     {
@@ -112,6 +117,11 @@ void importTradesFromCSVToDB(const std::string& csvPath, const std::string& conf
 
 }
 	
+
+
+
+
+
 
 
 
