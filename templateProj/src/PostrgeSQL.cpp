@@ -1,5 +1,6 @@
-#include "../include/PostrgeSQL.h"
-#include "../include/TradeResult.h"
+#pragma warning(disable : 4996)
+#include "PostrgeSQL.h"
+#include "TradeResult.h"
 PostrgeSQL* PostrgeSQL::instance = nullptr;
 //singeltion pattern 
 PostrgeSQL* PostrgeSQL::getInstance() {
@@ -26,7 +27,7 @@ void PostrgeSQL::connectToDB(const std::string& postgreConn) {
 			"CREATE TABLE IF NOT EXISTS trades ("
 			"  id        INT PRIMARY KEY,"
 			"  decision  TEXT NOT NULL,"
-			"  score     INT NOT NULL"
+			"  score     DOUBLE PRECISION NOT NULL"
 			");"
 		);
 		txn.commit();
@@ -64,16 +65,11 @@ void PostrgeSQL::saveToDB(const std::vector<TradeResult>& batch)
 		// or it not execute nothing 
 		pqxx::work txn{ *conn_ };
 		for (const auto& r : batch) {
-			const std::string dec = decision_to_string(r.decision);
-			std::string query = "INSERT INTO trades (id, decision, score) VALUES ("
-				+
-				std::to_string(r.id) + ", '" +
-				txn.esc(decision_to_string(r.decision)) + "', " +
-				std::to_string(r.score) + ") "
-				"ON CONFLICT (id) DO UPDATE SET "
-				"decision = EXCLUDED.decision, score = EXCLUDED.score;";
-			txn.exec(query);
 
+		txn.exec_prepared("ins_trade",
+		r.id,
+		decision_to_string(r.decision),
+		r.score);
 
 		}
 		//only here we save all our execution on conn
