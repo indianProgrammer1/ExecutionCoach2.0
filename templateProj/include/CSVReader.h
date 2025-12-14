@@ -1,10 +1,10 @@
-#include "../include/Trade.h"
+#include "Trade.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
-#include <filesystem>
+
 
 
 class CSVReader {
